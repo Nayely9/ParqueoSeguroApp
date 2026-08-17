@@ -73,7 +73,56 @@ def login():
 
     }), 200
 
+# REGISTRO
 
+@auth.route("/registro", methods=["POST"])
+def registro():
+
+    datos = request.get_json()
+
+    nombre = datos["nombre"]
+    email = datos["email"]
+    contrasena = datos["contrasena"]
+    telefono = datos.get("telefono")
+
+
+    # Verificar si el correo ya existe
+
+    usuario_existente = Usuario.query.filter_by(
+        email=email
+    ).first()
+
+    if usuario_existente:
+        return jsonify({
+            "mensaje": "El correo ya está registrado"
+        }), 400
+
+
+    # Encriptar contraseña
+
+    contrasena_hash = bcrypt.hashpw(
+        contrasena.encode("utf-8"),
+        bcrypt.gensalt()
+    ).decode("utf-8")
+
+
+    # Crear usuario
+
+    nuevo_usuario = Usuario(
+        nombre=nombre,
+        email=email,
+        contrasena=contrasena_hash,
+        telefono=telefono
+    )
+
+
+    db.session.add(nuevo_usuario)
+    db.session.commit()
+
+
+    return jsonify({
+        "mensaje": "Usuario registrado correctamente"
+    }), 201
 
 # RENOVAR TOKEN
 
